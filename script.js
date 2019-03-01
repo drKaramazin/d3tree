@@ -160,16 +160,23 @@ draw = () => {
     drawCaptions('black');
 
     // Links
-    linkTypeE = document.getElementById('linksType');
-    linkType = linkTypeE.options[linkTypeE.selectedIndex].value;
+    const linkTypeE = document.getElementById('linksType');
+    console.log(linkTypeE);
+    const linkType = linkTypeE.options[linkTypeE.selectedIndex].value;
+    console.log(linkType);
 
     if (linkType === "curves") {
+        console.log(root.links());
+        console.log(linkGroups);
         linkGroups.selectAll('path')
             .data(root.links())
             .enter()
             .append('path')
             .classed('link', true)
-            .attr('id', d => d.target.data.id + '-link')
+            .attr('id', d => {
+                console.log('qwerty');
+                return d.target.data.id + '-link';
+            })
             .attr('d', d3.linkVertical()
                 .x(d => d.x)
                 .y(d => d.y)
