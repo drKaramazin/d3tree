@@ -1,0 +1,32 @@
+.link {
+    fill: none;
+    stroke: #ccc;
+    stroke-width: 1px;
+}
+
+.link.active {
+    stroke: #000;
+}
+
+.node {
+    fill: steelblue;
+    stroke: none;
+    cursor: pointer;
+}
+
+.node.active {
+    fill: red;
+}
+
+.node-caption {
+    font-family: Arial;
+    font-size: 15px;
+}
+
+.node-caption.black {
+    fill: #000;
+}
+
+.node-caption.white {
+    stroke: white;
+}

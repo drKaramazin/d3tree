@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>D3.js Tree</title>
+
+    <script src="vendor/d3/d3.min.js"></script>
+    <script src="script.js"></script>
+
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+<div>
+    <div style="margin: 1em 0;">
+        Links
+        <select onchange="refresh()" id="linksType">
+            <option value="curves">Curves</option>
+            <option value="lines">Lines</option>
+        </select>
+    </div>
+    <div style="margin: 1em 0;">
+        Transform
+        <select onchange="refresh()" id="tranformDirection">
+            <option value="top-bottom">Top - Bottom</option>
+            <option value="right-left">Right - Left</option>
+            <option value="bottom-top">Bottom - Top</option>
+            <option value="left-right">Left - Right</option>
+        </select>
+    </div>
+    <div style="margin: 1em 0;">
+        Type
+        <select id="treeType" onchange="refresh()">
+            <option value="tree">Tree</option>
+            <option value="cluster">Cluster</option>
+        </select>
+    </div>
+</div>
+
+<svg width="500" height="200">
+    <g id="layout">
+        <g class="links"></g>
+        <g class="nodes"></g>
+    </g>
+</svg>
+
+</body>
+</html>
