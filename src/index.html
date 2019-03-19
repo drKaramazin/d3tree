@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>D3.js Tree</title>
 
-    <script src="node_modules/d3/dist/d3.min.js"></script>
+    <script src="../node_modules/d3/dist/d3.min.js"></script>
     <script src="script.js"></script>
 
     <link href="style.css" rel="stylesheet">
@@ -30,7 +30,7 @@
     </div>
     <div style="margin: 1em 0;">
         Type
-        <select id="treeType" onchange="refresh()">
+        <select id="treeType" onchange="changeType()">
             <option value="tree">Tree</option>
             <option value="cluster">Cluster</option>
         </select>

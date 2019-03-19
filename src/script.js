@@ -1,10 +1,15 @@
+const TYPE = {
+    CUBIC: 'cubic',
+    CIRCLE: 'circle',
+};
+
 const data = {
     "name": "Source task",
     "type": "circle",
     "children": [
         {
             "name": "Task rev B1",
-            "type": "cubic",
+            "type": TYPE.CUBIC,
             "children": [
                 {
                     "name": "Task rev C1",
@@ -56,11 +61,13 @@ let type = 'tree';
 let treeLayout;
 let clusterLayout;
 
-const linkGroups = d3.select('svg g.links');
+let linkGroups;
 
 width = 400;
 height = 200;
-c = 7;
+const C = 10;
+
+const R = 10;
 
 prepareLayout = (size, transform) => {
     const layout = document.getElementById('layout');
@@ -74,6 +81,28 @@ prepareLayout = (size, transform) => {
     }
 };
 
+prepareCanvas = () => {
+    const treeType = document.getElementById('treeType');
+    type = treeType.options[treeType.selectedIndex].value;
+
+    const tranformDirection = document.getElementById('tranformDirection');
+    direction = tranformDirection.options[tranformDirection.selectedIndex].value;
+    switch(direction) {
+        case 'top-bottom':
+            prepareLayout([width, height - C*2], `translate(0, ${C})`);
+            break;
+        case 'right-left':
+            prepareLayout([height, width - C*2], `translate(${width - C}, 0), rotate(90)`);
+            break;
+        case 'bottom-top':
+            prepareLayout([width, height - C*2], `translate(${width}, ${height - C}), rotate(180)`);
+            break;
+        case 'left-right':
+            prepareLayout([height, width - C*2], `translate(${C}, ${height}) rotate(-90)`);
+            break;
+    }
+};
+
 drawCaptions = (cl) => {
     d3.select('svg g.nodes')
         .selectAll(`text.node-caption.${cl}`)
@@ -84,8 +113,8 @@ drawCaptions = (cl) => {
         .classed(cl, true)
         .attr('style', 'display: none;')
         .attr('id', d => d.data.id + '-caption-' + cl)
-        .attr('x', (d) => d.x + c * 2)
-        .attr('y', (d) => d.y + c/2)
+        .attr('x', (d) => d.x + C * 2)
+        .attr('y', (d) => d.y + C/2)
         .attr('transform', (d) => {
             switch (direction) {
                 case 'top-bottom':
@@ -101,82 +130,17 @@ drawCaptions = (cl) => {
         .text((d) => d.data.name);
 };
 
-draw = () => {
-    const treeType = document.getElementById('treeType');
-    type = treeType.options[treeType.selectedIndex].value;
-
-    const tranformDirection = document.getElementById('tranformDirection');
-    direction = tranformDirection.options[tranformDirection.selectedIndex].value;
-    switch(direction) {
-        case 'top-bottom':
-            prepareLayout([width, height - c*2], `translate(0, ${c})`);
-            break;
-        case 'right-left':
-            prepareLayout([height, width - c*2], `translate(${width - c}, 0), rotate(90)`);
-            break;
-        case 'bottom-top':
-            prepareLayout([width, height - c*2], `translate(${width}, ${height - c}), rotate(180)`);
-            break;
-        case 'left-right':
-            prepareLayout([height, width - c*2], `translate(${c}, ${height}) rotate(-90)`);
-            break;
-    }
-
-    // Nodes
-    d3.select('svg g.nodes')
-        .selectAll('circle.node')
-        .data(root.descendants())
-        .enter()
-        .append('circle')
-        .classed('node', true)
-        .attr('cx', (d) => d.x)
-        .attr('cy', (d) => d.y)
-        .attr('r', 6)
-        .attr('id', (d, i) => d.data.id = 'node' + i)
-        .on('mouseover', (d) => {
-            root.path(d).forEach(item => {
-                d3.select('#' + item.data.id)
-                    .classed('active', true);
-                d3.select('#' + item.data.id + '-link')
-                    .classed('active', true);
-                d3.select('#' + item.data.id + '-caption-black')
-                    .attr('style', '');
-                d3.select('#' + item.data.id + '-caption-white')
-                    .attr('style', '');
-            });
-        })
-        .on('mouseout', () => {
-            d3.select('svg g.nodes')
-                .selectAll('circle.node.active')
-                .classed('active', false);
-            linkGroups.selectAll('.link.active')
-                .classed('active', false);
-            d3.select('svg g.nodes')
-                .selectAll('text.node-caption')
-                .attr('style', 'display: none;');
-        });
-
-    drawCaptions('white');
-    drawCaptions('black');
-
-    // Links
+drawLinks = () => {
     const linkTypeE = document.getElementById('linksType');
-    console.log(linkTypeE);
     const linkType = linkTypeE.options[linkTypeE.selectedIndex].value;
-    console.log(linkType);
 
     if (linkType === "curves") {
-        console.log(root.links());
-        console.log(linkGroups);
         linkGroups.selectAll('path')
             .data(root.links())
             .enter()
             .append('path')
             .classed('link', true)
-            .attr('id', d => {
-                console.log('qwerty');
-                return d.target.data.id + '-link';
-            })
+            .attr('id', d => d.target.data.id + '-link')
             .attr('d', d3.linkVertical()
                 .x(d => d.x)
                 .y(d => d.y)
@@ -193,20 +157,84 @@ draw = () => {
             .attr('x2', d => d.target.x)
             .attr('y2', d => d.target.y);
     }
-
 };
 
-clear = () => {
+calcPoints = d => d.data.type === TYPE.CUBIC ? `${d.x}, ${d.y - R} ${d.x + R},${d.y} ${d.x},${d.y + R} ${d.x - R},${d.y}`: null;
+calcCx = d => d.data.type === TYPE.CIRCLE ? d.x : null;
+calcCy = d => d.data.type === TYPE.CIRCLE ? d.y : null;
+
+draw = () => {
+    prepareCanvas();
+
     // Nodes
     d3.select('svg g.nodes')
         .selectAll('circle.node')
-        .remove();
+        .data(root.descendants())
+        .enter()
+        .append((d, i, node) => {
+            if (d.data.type === TYPE.CUBIC) {
+                return d3.creator('svg:polygon').call(node[i]);
+            } else {
+                return d3.creator('svg:circle').call(node[i]);
+            }
+        })
+        .classed('node', true)
+        .attr('points', d => calcPoints(d))
+        .attr('cx', d => calcCx(d))
+        .attr('cy', d => calcCy(d))
+        .attr('r', (d) => d.data.type === TYPE.CIRCLE ? R : null)
+        .attr('id', (d, i) => d.data.id = 'node' + i)
+        .on('mouseover', d => {
+            root.path(d).forEach(item => {
+                d3.select('#' + item.data.id)
+                    .classed('active', true);
+                d3.select('#' + item.data.id + '-link')
+                    .classed('active', true);
+                d3.select('#' + item.data.id + '-caption-black')
+                    .attr('style', '');
+                d3.select('#' + item.data.id + '-caption-white')
+                    .attr('style', '');
+            });
+        })
+        .on('mouseout', () => {
+            d3.select('svg g.nodes')
+                .selectAll('.node.active')
+                .classed('active', false);
+            linkGroups.selectAll('.link.active')
+                .classed('active', false);
+            d3.select('svg g.nodes')
+                .selectAll('text.node-caption')
+                .attr('style', 'display: none;');
+        });
+
+    drawCaptions('white');
+    drawCaptions('black');
+
+    drawLinks();
+};
+
+changeType = () => {
+    clearLinks();
+    clearCaptions();
+
+    prepareCanvas();
 
     d3.select('svg g.nodes')
-        .selectAll('text.node-caption')
-        .remove();
+        .selectAll('circle.node')
+        .data(root.descendants())
+        .transition()
+        .duration(1000)
+        .attr('points', d => calcPoints(d))
+        .attr('cx', d => calcCx(d))
+        .attr('cy', d => calcCy(d));
 
-    // Links
+    drawCaptions('white');
+    drawCaptions('black');
+
+    drawLinks();
+};
+
+clearLinks = () => {
     d3.select('svg g.links')
         .selectAll('path')
         .remove();
@@ -216,12 +244,34 @@ clear = () => {
         .remove();
 };
 
+clearCaptions = () => {
+    d3.select('svg g.nodes')
+        .selectAll('text.node-caption')
+        .remove();
+};
+
+clear = () => {
+    // Nodes: Circles
+    d3.select('svg g.nodes')
+        .selectAll('circle.node')
+        .remove();
+
+    // Nodes: Polygons
+    d3.select('svg g.nodes')
+        .selectAll('polygon.node')
+        .remove();
+
+    clearCaptions();
+    clearLinks();
+};
+
 refresh = () => {
     clear();
     draw();
 };
 
 init = () => {
+    linkGroups = d3.select('svg g.links');
     draw();
 };
 
