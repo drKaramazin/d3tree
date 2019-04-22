@@ -5,7 +5,7 @@ const TYPE = {
 
 const data = {
     "name": "Source task",
-    "type": "circle",
+    "type": TYPE.CIRCLE,
     "children": [
         {
             "name": "Task rev B1",
@@ -13,41 +13,41 @@ const data = {
             "children": [
                 {
                     "name": "Task rev C1",
-                    "type": "circle",
+                    "type": TYPE.CIRCLE,
                     "value": 100,
                     "children": [
                         {
                             "name": "Task rev D1",
-                            "type": "circle",
+                            "type": TYPE.CIRCLE,
                             "value": 100
                         },
                         {
                             "name": "Task rev D2",
-                            "type": "circle",
+                            "type": TYPE.CIRCLE,
                             "value": 300
                         },
                         {
                             "name": "Task rev D3",
-                            "type": "circle",
+                            "type": TYPE.CUBIC,
                             "value": 200
                         }
                     ]
                 },
                 {
                     "name": "Task rev C2",
-                    "type": "circle",
+                    "type": TYPE.CIRCLE,
                     "value": 300
                 },
                 {
                     "name": "Task rev C3",
-                    "type": "circle",
+                    "type": TYPE.CIRCLE,
                     "value": 200
                 }
             ]
         },
         {
             "name": "Task rev B2",
-            "type": "circle",
+            "type": TYPE.CIRCLE,
             "value": 200
         }
     ]
@@ -64,14 +64,22 @@ let clusterLayout;
 let linkGroups;
 
 width = 400;
-height = 200;
+height = 300;
 const C = 10;
 
 const R = 10;
 
-prepareLayout = (size, transform) => {
-    const layout = document.getElementById('layout');
-    layout.setAttribute('transform', transform);
+prepareLayout = (size, transform, isTransition) => {
+    if (!isTransition) {
+        const layout = document.getElementById('layout');
+        layout.setAttribute('transform', transform);
+    } else {
+        d3.select('#layout')
+            .transition()
+            .duration(1000)
+            .attr('transform', transform);
+    }
+
     if (type === 'tree') {
         treeLayout = d3.tree().size(size);
         treeLayout(root);
@@ -81,7 +89,7 @@ prepareLayout = (size, transform) => {
     }
 };
 
-prepareCanvas = () => {
+prepareCanvas = (isTransition) => {
     const treeType = document.getElementById('treeType');
     type = treeType.options[treeType.selectedIndex].value;
 
@@ -89,16 +97,16 @@ prepareCanvas = () => {
     direction = tranformDirection.options[tranformDirection.selectedIndex].value;
     switch(direction) {
         case 'top-bottom':
-            prepareLayout([width, height - C*2], `translate(0, ${C})`);
+            prepareLayout([width, height - C*2], `translate(0, ${C})`, isTransition);
             break;
         case 'right-left':
-            prepareLayout([height, width - C*2], `translate(${width - C}, 0), rotate(90)`);
+            prepareLayout([height, width - C*2], `translate(${width - C}, 0), rotate(90)`, isTransition);
             break;
         case 'bottom-top':
-            prepareLayout([width, height - C*2], `translate(${width}, ${height - C}), rotate(180)`);
+            prepareLayout([width, height - C*2], `translate(${width}, ${height - C}), rotate(180)`, isTransition);
             break;
         case 'left-right':
-            prepareLayout([height, width - C*2], `translate(${C}, ${height}) rotate(-90)`);
+            prepareLayout([height, width - C*2], `translate(${C}, ${height}) rotate(-90)`, isTransition);
             break;
     }
 };
@@ -130,11 +138,13 @@ drawCaptions = (cl) => {
         .text((d) => d.data.name);
 };
 
-drawLinks = () => {
+getCurrentLinkType = () => {
     const linkTypeE = document.getElementById('linksType');
-    const linkType = linkTypeE.options[linkTypeE.selectedIndex].value;
+    return linkType = linkTypeE.options[linkTypeE.selectedIndex].value;
+};
 
-    if (linkType === "curves") {
+drawLinks = () => {
+    if (getCurrentLinkType() === "curves") {
         linkGroups.selectAll('path')
             .data(root.links())
             .enter()
@@ -159,6 +169,40 @@ drawLinks = () => {
     }
 };
 
+transitionLinks = () => {
+    if (getCurrentLinkType() === "curves") {
+        linkGroups.selectAll('path')
+            .data(root.links())
+            .transition()
+            .duration(1000)
+            .attr('d', d3.linkVertical()
+                .x(d => d.x)
+                .y(d => d.y)
+            );
+    } else {
+        linkGroups.selectAll('line')
+            .data(root.links())
+            .transition()
+            .duration(1000)
+            .attr('id', d => d.target.data.id + '-link')
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y);
+    }
+};
+
+transitionNodes = () => {
+    d3.select('svg g.nodes')
+        .selectAll('.node')
+        .data(root.descendants())
+        .transition()
+        .duration(1000)
+        .attr('points', d => calcPoints(d))
+        .attr('cx', d => calcCx(d))
+        .attr('cy', d => calcCy(d));
+};
+
 calcPoints = d => d.data.type === TYPE.CUBIC ? `${d.x}, ${d.y - R} ${d.x + R},${d.y} ${d.x},${d.y + R} ${d.x - R},${d.y}`: null;
 calcCx = d => d.data.type === TYPE.CIRCLE ? d.x : null;
 calcCy = d => d.data.type === TYPE.CIRCLE ? d.y : null;
@@ -168,7 +212,7 @@ draw = () => {
 
     // Nodes
     d3.select('svg g.nodes')
-        .selectAll('circle.node')
+        .selectAll('.node')
         .data(root.descendants())
         .enter()
         .append((d, i, node) => {
@@ -213,20 +257,27 @@ draw = () => {
     drawLinks();
 };
 
+changeTransform = () => {
+    clearCaptions();
+
+    prepareCanvas(true);
+
+    transitionLinks();
+    transitionNodes();
+
+    drawCaptions('white');
+    drawCaptions('black');
+
+    drawLinks();
+};
+
 changeType = () => {
-    clearLinks();
     clearCaptions();
 
     prepareCanvas();
 
-    d3.select('svg g.nodes')
-        .selectAll('circle.node')
-        .data(root.descendants())
-        .transition()
-        .duration(1000)
-        .attr('points', d => calcPoints(d))
-        .attr('cx', d => calcCx(d))
-        .attr('cy', d => calcCy(d));
+    transitionLinks();
+    transitionNodes();
 
     drawCaptions('white');
     drawCaptions('black');

@@ -21,7 +21,7 @@
     </div>
     <div style="margin: 1em 0;">
         Transform
-        <select onchange="refresh()" id="tranformDirection">
+        <select onchange="changeTransform()" id="tranformDirection">
             <option value="top-bottom">Top - Bottom</option>
             <option value="right-left">Right - Left</option>
             <option value="bottom-top">Bottom - Top</option>
@@ -37,7 +37,7 @@
     </div>
 </div>
 
-<svg width="500" height="200">
+<svg width="500" height="500">
     <g id="layout">
         <g class="links"></g>
         <g class="nodes"></g>
