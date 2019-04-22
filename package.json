@@ -4,6 +4,7 @@
   "description": "D3.js tree example",
   "main": "src/script.js",
   "scripts": {
+    "serve":  "gulp",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,5 +19,9 @@
   "homepage": "https://github.com/drKaramazin/d3tree#readme",
   "dependencies": {
     "d3": "^5.9.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.26.3",
+    "gulp": "^4.0.1"
   }
 }
