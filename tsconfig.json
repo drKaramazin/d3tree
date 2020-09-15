@@ -1,7 +1,11 @@
 {
     "compilerOptions": {
-        "allowJs": true,
-        "target": "es5"
+        "target": "ES5",
+        "baseUrl": ".",
+        "sourceMap": true,
+        "typeRoots": [
+            "../node_modules/@types"
+        ]
     },
     "include": [
         "./src/**/*"

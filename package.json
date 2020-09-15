@@ -2,7 +2,7 @@
   "name": "tree",
   "version": "0.0.1",
   "description": "D3.js tree example",
-  "main": "src/script.js",
+  "main": "src/tree.js",
   "scripts": {
     "build": "gulp build",
     "serve": "gulp serve",
@@ -19,13 +19,17 @@
   },
   "homepage": "https://github.com/drKaramazin/d3tree#readme",
   "dependencies": {
+    "@types/d3": "^5.7.2",
     "d3": "^5.9.1"
   },
   "devDependencies": {
+    "browser-sync": "^2.26.12",
+    "browserify": "^16.5.2",
     "fancy-log": "^1.3.3",
     "gulp": "^4.0.1",
     "gulp-file-sync": "^2.0.0",
-    "gulp-typescript": "^6.0.0-alpha.1",
-    "typescript": "^3.9.7"
+    "tsify": "^5.0.2",
+    "typescript": "^4.0.2",
+    "vinyl-source-stream": "^2.0.0"
   }
 }
