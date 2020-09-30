@@ -7,7 +7,9 @@ const
     browserify = require("browserify"),
     source = require("vinyl-source-stream"),
     tsify = require("tsify"),
-    browserSync = require('browser-sync').create();
+    browserSync = require('browser-sync').create(),
+    mustache = require("gulp-mustache"),
+    sass = require('gulp-sass');
 
 const sourcePath = 'src';
 const distPath = 'dist';
@@ -20,16 +22,22 @@ gulp.task('build', function () {
         entries: [`${sourcePath}/main.ts`],
         cache: {},
         packageCache: {},
-    }).plugin(tsify)
+    }).plugin(tsify, { project: sourcePath })
         .bundle()
         .pipe(source("bundle.js"))
+        .pipe(gulp.dest(distPath));
+});
+
+gulp.task('sass', function () {
+    return gulp.src(`${sourcePath}/**/*.scss`)
+        .pipe(sass.sync().on('error', sass.logError))
         .pipe(gulp.dest(distPath));
 });
 
 gulp.task('sync-files', function () {
     return new Promise((resolve, reject) => {
         fileSync(sourcePath, distPath, {
-            ignore: /^.+\.ts$/i,
+            ignore: [/^.+\.ts$/i, /^.+\.mustache$/i, /^.+\.scss$/i, 'tsconfig.json'],
         });
 
         let d3Ready, d3Hierarchy;
@@ -56,6 +64,12 @@ gulp.task('sync-files', function () {
     });
 });
 
+gulp.task('compile-templates', function () {
+    return gulp.src(`${sourcePath}/*.mustache`)
+        .pipe(mustache({}, { extension: '.html' }))
+        .pipe(gulp.dest(distPath));
+});
+
 gulp.task('reload-browser', function (done) {
     browserSync.reload();
     done();
@@ -68,7 +82,61 @@ gulp.task('watch', function () {
         }
     });
 
-    return gulp.watch(`${sourcePath}/**/*`, gulp.series('sync-files', 'build', 'reload-browser'));
+    return gulp.watch(`${sourcePath}/**/*`, gulp.series('sync-files', 'sass', 'compile-templates', 'build', 'reload-browser'));
 });
 
-gulp.task('serve', gulp.series('sync-files', 'build', 'watch'));
+gulp.task('serve', gulp.series('sync-files', 'sass', 'compile-templates', 'build', 'watch'));
+
+gulp.task('gain', function (done) {
+    const carrier = '../../abibits/octopus-frontend-ng5';
+
+    fs.copyFile(
+        `${carrier}/src/app/widgets/revisions-tree/revisions-tree.component.html`,
+        `${sourcePath}/partials/tree.mustache`,
+        console.error,
+    );
+
+    fs.copyFile(
+        `${carrier}/src/app/widgets/revisions-tree/revisions-tree.ts`,
+        `${sourcePath}/revisions-tree.ts`,
+        console.error,
+    );
+
+    fs.copyFile(
+        `${carrier}/src/app/models/revisions/revision.ts`,
+        `${sourcePath}/models/revisions/revision.ts`,
+        console.error,
+    );
+
+    fs.copyFile(
+        `${carrier}/src/app/models/revisions/revision-tree-model.ts`,
+        `${sourcePath}/models/revisions/revision-tree-model.ts`,
+        console.error,
+    );
+
+    fs.copyFile(
+        `${carrier}/src/app/models/user.ts`,
+        `${sourcePath}/models/user.ts`,
+        console.error,
+    );
+
+    fs.copyFile(
+        `${carrier}/src/app/models/unit.ts`,
+        `${sourcePath}/models/unit.ts`,
+        console.error,
+    );
+
+    fs.copyFile(
+        `${carrier}/src/app/models/locality.ts`,
+        `${sourcePath}/models/locality.ts`,
+        console.error,
+    );
+
+    fs.copyFile(
+        `${carrier}/src/styles/revisions.scss`,
+        `${sourcePath}/revisions.scss`,
+        console.error,
+    );
+
+    done();
+});

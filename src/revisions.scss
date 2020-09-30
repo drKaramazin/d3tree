@@ -1,0 +1,49 @@
+$current-link-color: rgb(253, 91, 50);
+$current-node-color: #3A6ACC;
+
+.revision-link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1px;
+}
+
+.revision-link.current {
+  stroke: $current-link-color;
+}
+
+.revision-link.active {
+  stroke: #000;
+}
+
+.revision-node {
+  fill: rgb(73, 132, 255);
+  stroke: none;
+  cursor: pointer;
+}
+
+.revision-node.current {
+  fill: $current-node-color;
+}
+
+.revision-node.active {
+  fill: #ED3B23;
+}
+
+.revision-node.current-node {
+  fill: #90c512;
+  stroke: #727A7F;
+  stroke-width: 1px;
+}
+
+.revision-node-caption {
+  font-family: Arial;
+  font-size: 15px;
+}
+
+.revision-node-caption.black {
+  fill: #000;
+}
+
+.revision-node-caption.white {
+  stroke: white;
+}

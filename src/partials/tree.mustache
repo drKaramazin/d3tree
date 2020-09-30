@@ -1,0 +1,17 @@
+<svg id="revisionsTree" #canvas width="100%" height="300px">
+    <defs>
+
+        <filter id="currentNodeBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+            <feMerge>
+                <feMergeNode />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+
+    </defs>
+    <g id="layout">
+        <g class="links"></g>
+        <g class="nodes"></g>
+    </g>
+</svg>

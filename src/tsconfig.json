@@ -3,12 +3,17 @@
         "target": "ES5",
         "baseUrl": ".",
         "sourceMap": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
         "typeRoots": [
             "../node_modules/@types"
         ],
-        "lib": [ "dom", "es2015" ]
+        "lib": [ "dom", "es2015" ],
+        "paths": {
+            "@models/*": ["models/*"]
+        }
     },
     "include": [
-        "./src/**/*"
+        "./**/*"
     ]
 }
