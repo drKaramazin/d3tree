@@ -22,7 +22,7 @@
   "homepage": "https://github.com/drKaramazin/d3tree#readme",
   "dependencies": {
     "@types/d3": "^5.7.2",
-    "d3": "^5.9.1"
+    "d3": "^7.6.1"
   },
   "devDependencies": {
     "browser-sync": "^2.26.12",
